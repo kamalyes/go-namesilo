@@ -131,6 +131,13 @@ var (
 	ErrDomainTransferDenied = NewError(ErrCodeOperationFailed, "domain transfer denied")
 	ErrInsufficientBalance  = NewError(ErrCodeOperationFailed, "insufficient account balance")
 
+	// Transfer 相关错误
+	ErrTransferNotFound       = NewError(ErrCodeOperationFailed, "transfer not found")
+	ErrAuthCodeRequired       = NewError(ErrCodeMissingParam, "auth code (EPP code) is required")
+	ErrInvalidAuthCode        = NewError(ErrCodeInvalidParam, "invalid auth code (EPP code)")
+	ErrTransferIDRequired     = NewError(ErrCodeMissingParam, "transfer_id is required")
+	ErrTransferAlreadyPending = NewError(ErrCodeOperationFailed, "transfer is already pending")
+
 	// Forwarding 相关错误
 	ErrURLRequired       = NewError(ErrCodeMissingParam, "URL is required")
 	ErrSubdomainRequired = NewError(ErrCodeMissingParam, "subdomain is required")

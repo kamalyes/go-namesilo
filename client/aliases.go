@@ -25,6 +25,8 @@ var (
 	ErrInvalidAPIKey   = namesilo.ErrInvalidAPIKey
 	ErrRequestFailed   = namesilo.ErrRequestFailed
 	ErrInvalidResponse = namesilo.ErrInvalidResponse
+	ErrCodeAPIResponse = namesilo.ErrCodeAPIResponse
+	ErrCodeAPIRequest  = namesilo.ErrCodeAPIRequest
 )
 
 // ============================================================================
@@ -43,6 +45,17 @@ const (
 // ============================================================================
 
 type Config = types.Config
+
+type Logger = types.Logger
+
+var NoLogger = types.NewEmptyLogger()
+
+type ResponseType = types.ResponseType
+
+const (
+	ResponseTypeJSON = types.ResponseTypeJSON
+	ResponseTypeXML  = types.ResponseTypeXML
+)
 
 // ============================================================================
 // 通用响应类型

@@ -2,7 +2,7 @@
  * @Author: kamalyes 501893067@qq.com
  * @Date: 2025-12-30 00:00:00
  * @LastEditors: kamalyes 501893067@qq.com
- * @LastEditTime: 2026-01-16 22:15:32
+ * @LastEditTime: 2026-01-16 19:23:00
  * @FilePath: \go-namesilo\types\common.go
  * @Description:
  *
@@ -19,12 +19,28 @@ import (
 	"time"
 )
 
+type ResponseType string
+
+const (
+	ResponseTypeJSON ResponseType = "json"
+	ResponseTypeXML  ResponseType = "xml"
+)
+
+func (rt ResponseType) String() string {
+	return string(rt)
+}
+
 // Config NameSilo API 配置
 type Config struct {
-	APIKey  string        // API 密钥
-	BaseURL string        // API 基础 URL，默认为 https://www.namesilo.com/api
-	Timeout time.Duration // 请求超时时间，默认 30 秒
-	Debug   bool          // 是否开启调试模式
+	ID           uint64        // 配置 ID
+	APIKey       string        // API 密钥
+	APIVersion   string        // API 版本，默认为 "1"
+	BaseURL      string        // API 基础 URL，默认为 https://www.namesilo.com/api
+	PublicURL    string        // 公共访问 URL，默认为 https://www.namesilo.com
+	ResponseType ResponseType  // 响应类型，json 或 xml，默认 xml
+	Timeout      time.Duration // 请求超时时间，默认 30 秒
+	Debug        bool          // 是否开启调试模式
+	Logger       Logger        // 日志记录器
 }
 
 // BaseResponse API 基础响应结构
@@ -264,7 +280,7 @@ func StatusCodeMessage(code int) string {
 // API 常量
 const (
 	DefaultAPIVersion = "1"
-	DefaultType       = "json"
+	DefaultType       = ResponseTypeXML // NameSilo API 默认返回 XML
 	DefaultBaseURL    = "https://www.namesilo.com/api"
 	DefaultTimeout    = 30 * time.Second
 )

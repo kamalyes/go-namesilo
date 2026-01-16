@@ -210,20 +210,20 @@ dnsService := dns.NewService(client)
 // 添加 DNS 记录
 addReq := &dns.DNSAddRecordRequest{
     Domain:   "example.com",
-    RRType:   "A",
-    RRHost:   "www",
-    RRValue:  "192.168.1.1",
-    RRTTL:    3600,
+    Type:     "A",
+    Host:     "www",
+    Value:    "192.168.1.1",
+    TTL:      3600,
 }
 addResp, err := dnsService.AddRecord(ctx, addReq)
 
 // 更新 DNS 记录
 updateReq := &dns.DNSUpdateRecordRequest{
-    Domain:  "example.com",
-    RRID:    addResp.RecordID,
-    RRHost:  "www",
-    RRValue: "192.168.1.2",
-    RRTTL:   7200,
+    Domain:   "example.com",
+    RecordID: addResp.RecordID,
+    Host:     "www",
+    Value:    "192.168.1.2",
+    TTL:      7200,
 }
 _, err = dnsService.UpdateRecord(ctx, updateReq)
 
@@ -359,7 +359,7 @@ func (s *Service) SomeFunction(domain string) error {
 }
 ```
 
-## � 完整功能列表
+## 完整功能列表
 
 ### 域名管理 (domains)
 

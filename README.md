@@ -90,16 +90,16 @@ graph TB
 
 | 模块 | 功能描述 | 主要 API |
 |------|----------|----------|
-| [🌐 domains](domains) | 域名管理 | 注册、续费、转移、查询、锁定 |
-| [📝 dns](dns) | DNS 记录管理 | 增删改查、DNSSEC |
-| [👤 contact](contact) | 联系人管理 | CRUD、域名关联 |
-| [💰 account](account) | 账户管理 | 余额、订单、价格 |
-| [🔧 nameserver](nameserver) | 域名服务器 | NS 管理、修改 |
-| [📮 forwarding](forwarding) | 转发管理 | 域名转发、邮件转发 |
-| [🔒 privacy](privacy) | 隐私保护 | 添加/移除 WHOIS 隐私 |
-| [🔄 transfer](transfer) | 转移管理 | 授权码、转移状态、更新操作 |
-| [📁 portfolio](portfolio) | 组合管理 | 域名组合 CRUD、关联 |
-| [🔌 client](client) | HTTP 客户端 | 请求封装、响应解析 |
+| 🌐 [**domains**](domains/README.md) | 域名管理 | 注册、续费、转移、查询、锁定 |
+| 📝 [**dns**](dns/README.md) | DNS 记录管理 | 增删改查、DNSSEC |
+| 👤 [**contact**](contact/README.md) | 联系人管理 | CRUD、域名关联 |
+| 💰 [**account**](account/README.md) | 账户管理 | 余额、订单、价格 |
+| 🔧 [**nameserver**](nameserver/README.md) | 域名服务器 | NS 管理、修改 |
+| 📮 [**forwarding**](forwarding/README.md) | 转发管理 | 域名转发、邮件转发 |
+| 🔒 [**privacy**](privacy/README.md) | 隐私保护 | 添加/移除 WHOIS 隐私 |
+| 🔄 [**transfer**](transfer/README.md) | 转移管理 | 授权码、转移状态、更新操作 |
+| 📁 [**portfolio**](portfolio/README.md) | 组合管理 | 域名组合 CRUD、关联 |
+| 🔌 [**client**](client/README.md) | HTTP 客户端 | 请求封装、响应解析 |
 
 ### 🎯 统一错误处理
 
@@ -172,302 +172,9 @@ func main() {
 }
 ```
 
-### 高级用法示例
-
-#### 🌐 域名管理
-
-```go
-import "github.com/kamalyes/go-namesilo/domains"
-
-// 创建域名服务
-domainService := domains.NewService(client)
-
-// 注册域名
-registerReq := &domains.RegisterDomainRequest{
-    Domain:   "example.com",
-    Years:    1,
-    Private:  1,  // WHOIS 隐私保护
-    AutoRenew: 1,  // 自动续费
-}
-resp, err := domainService.RegisterDomain(ctx, registerReq)
-
-// 续费域名
-renewReq := &domains.RenewDomainRequest{
-    Domain: "example.com",
-    Years:  1,
-}
-resp, err := domainService.RenewDomain(ctx, renewReq)
-
-// 域名锁定/解锁
-lockReq := &domains.DomainLockRequest{Domain: "example.com"}
-unlockReq := &domains.DomainUnlockRequest{Domain: "example.com"}
-
-// 查询域名信息
-infoReq := &domains.GetDomainInfoRequest{Domain: "example.com"}
-info, err := domainService.GetDomainInfo(ctx, infoReq)
-
-// 域名转发
-forwardReq := &domains.DomainForwardRequest{
-    Domain:   "example.com",
-    Protocol: "https",
-    Address:  "https://newsite.com",
-    Method:   "301",
-}
-```
-
-#### 📝 DNS 记录管理
-
-```go
-import "github.com/kamalyes/go-namesilo/dns"
-
-// 创建 DNS 服务
-dnsService := dns.NewService(client)
-
-// 添加 DNS 记录
-addReq := &dns.DNSAddRecordRequest{
-    Domain:   "example.com",
-    Type:     "A",
-    Host:     "www",
-    Value:    "192.168.1.1",
-    TTL:      3600,
-}
-addResp, err := dnsService.AddRecord(ctx, addReq)
-
-// 更新 DNS 记录
-updateReq := &dns.DNSUpdateRecordRequest{
-    Domain:   "example.com",
-    RecordID: addResp.RecordID,
-    Host:     "www",
-    Value:    "192.168.1.2",
-    TTL:      7200,
-}
-_, err = dnsService.UpdateRecord(ctx, updateReq)
-
-// 删除 DNS 记录
-deleteReq := &dns.DNSDeleteRecordRequest{
-    Domain: "example.com",
-    RRID:   addResp.RecordID,
-}
-_, err = dnsService.DeleteRecord(ctx, deleteReq)
-
-// 列出所有 DNS 记录
-listReq := &dns.DNSListRecordsRequest{Domain: "example.com"}
-records, err := dnsService.ListRecords(ctx, listReq)
-for _, record := range records.Records {
-    fmt.Printf("%s  %s  %s -> %s\n", 
-        record.Type, record.Host, record.Value, record.TTL)
-}
-```
-
-#### 👤 联系人管理
-
-```go
-import "github.com/kamalyes/go-namesilo/contact"
-
-// 创建联系人服务
-contactService := contact.NewService(client)
-
-// 添加联系人
-addReq := &contact.ContactAddRequest{
-    FirstName: "John",
-    LastName:  "Doe",
-    Address:   "123 Main St",
-    City:      "New York",
-    State:     "NY",
-    Zip:       "10001",
-    Country:   "US",
-    Email:     "john@example.com",
-    Phone:     "+12125551234",
-}
-contactResp, err := contactService.AddContact(ctx, addReq)
-
-// 关联联系人到域名
-associateReq := &contact.ContactDomainAssociateRequest{
-    Domain:         "example.com",
-    Registrant:     contactResp.ContactID,
-    Administrative: contactResp.ContactID,
-    Technical:      contactResp.ContactID,
-    Billing:        contactResp.ContactID,
-}
-_, err = contactService.AssociateContactToDomain(ctx, associateReq)
-
-// 更新联系人
-updateReq := &contact.ContactUpdateRequest{
-    ContactID: contactResp.ContactID,
-    Email:     "newemail@example.com",
-    // ... 其他字段
-}
-_, err = contactService.UpdateContact(ctx, updateReq)
-
-// 列出所有联系人
-listResp, err := contactService.ListContacts(ctx, &contact.ContactListRequest{})
-for _, c := range listResp.Contacts {
-    fmt.Printf("联系人: %s %s (%s)\n", c.FirstName, c.LastName, c.Email)
-}
-```
-
-#### 💰 账户管理
-
-```go
-import "github.com/kamalyes/go-namesilo/account"
-
-// 创建账户服务
-accountService := account.NewService(client)
-
-// 查询账户余额
-balance, err := accountService.GetBalance(ctx, &account.GetAccountBalanceRequest{})
-fmt.Printf("账户余额: $%s\n", balance.Balance)
-
-// 查询即将到期的域名
-expiringReq := &account.ListExpiringDomainsRequest{DaysCount: 30}
-expiring, err := accountService.ListExpiringDomains(ctx, expiringReq)
-for _, domain := range expiring.Domains {
-    fmt.Printf("域名 %s 将在 %s 到期\n", domain.Domain, domain.Expires)
-}
-
-// 查询订单详情
-orderReq := &account.OrderDetailsRequest{OrderNumber: "12345"}
-order, err := accountService.GetOrderDetails(ctx, orderReq)
-```
-
-#### 🔒 隐私保护管理
-
-```go
-import "github.com/kamalyes/go-namesilo/privacy"
-
-// 创建隐私保护服务
-privacyService := privacy.NewService(client)
-
-// 添加 WHOIS 隐私保护
-addReq := &privacy.AddPrivacyRequest{Domain: "example.com"}
-addResp, err := privacyService.AddPrivacy(ctx, addReq)
-if err == nil {
-    fmt.Printf("隐私保护已添加，费用: $%.2f\n", addResp.Reply.OrderAmount)
-}
-
-// 移除 WHOIS 隐私保护
-removeReq := &privacy.RemovePrivacyRequest{Domain: "example.com"}
-_, err = privacyService.RemovePrivacy(ctx, removeReq)
-```
-
-#### 🔄 域名转移管理
-
-```go
-import "github.com/kamalyes/go-namesilo/transfer"
-
-// 创建转移服务
-transferService := transfer.NewService(client)
-
-// 获取域名授权码 (EPP Code)
-authReq := &transfer.RetrieveAuthCodeRequest{Domain: "example.com"}
-authResp, err := transferService.RetrieveAuthCode(ctx, authReq)
-if err == nil {
-    fmt.Printf("授权码: %s\n", authResp.Reply.AuthCode)
-}
-
-// 检查转移状态
-statusReq := &transfer.CheckTransferStatusRequest{Domain: "example.com"}
-statusResp, err := transferService.CheckTransferStatus(ctx, statusReq)
-if err == nil {
-    fmt.Printf("转移状态: %s\n", statusResp.Reply.Transfer.Status)
-    fmt.Printf("转移日期: %s\n", statusResp.Reply.Transfer.Date)
-}
-
-// 重新提交转移到注册局
-resubmitReq := &transfer.TransferUpdateResubmitRequest{Domain: "example.com"}
-_, err = transferService.UpdateResubmit(ctx, resubmitReq)
-
-// 重新发送管理员邮件
-emailReq := &transfer.TransferUpdateResendEmailRequest{Domain: "example.com"}
-_, err = transferService.UpdateResendEmail(ctx, emailReq)
-
-// 更改 EPP 授权码
-changeReq := &transfer.TransferUpdateChangeEPPCodeRequest{
-    Domain:  "example.com",
-    EPPCode: "new-epp-code-12345",
-}
-_, err = transferService.UpdateChangeEPPCode(ctx, changeReq)
-```
-
-#### 📁 域名组合管理
-
-```go
-import "github.com/kamalyes/go-namesilo/portfolio"
-
-// 创建组合管理服务
-portfolioService := portfolio.NewService(client)
-
-// 列出所有组合
-listResp, err := portfolioService.List(ctx, &portfolio.PortfolioListRequest{})
-for _, p := range listResp.Reply.Portfolios {
-    fmt.Printf("组合: %s (包含 %d 个域名)\n", p.Name, p.DomainCount)
-}
-
-// 创建新组合
-addResp, err := portfolioService.Add(ctx, &portfolio.PortfolioAddRequest{
-    Portfolio: "my-domains",
-})
-
-// 将域名关联到组合
-associateResp, err := portfolioService.DomainAssociate(ctx, &portfolio.PortfolioDomainAssociateRequest{
-    Domains:   []string{"example.com", "test.com", "mysite.com"},
-    Portfolio: "my-domains",
-})
-
-// 删除组合
-deleteResp, err := portfolioService.Delete(ctx, &portfolio.PortfolioDeleteRequest{
-    Portfolio: "old-portfolio",
-})
-```
-
-#### 🔧 自定义客户端配置
-
-```go
-import (
-    "time"
-    "github.com/kamalyes/go-namesilo/client"
-)
-
-// 创建带自定义配置的客户端
-c, err := client.New(
-    "your-api-key",
-    client.WithTimeout(30 * time.Second),      // 自定义超时
-    client.WithBaseURL("https://api.namesilo.com/api"), // 自定义 API 地址
-    client.WithDebug(true),                     // 开启调试模式
-)
-```
-
-#### 🎯 错误处理
-
-```go
-import namesilo "github.com/kamalyes/go-namesilo"
-
-// 检查特定错误
-resp, err := domainService.RegisterDomain(ctx, req)
-if err != nil {
-    // 使用统一的错误检查
-    if namesilo.IsError(err, namesilo.ErrDomainRequired) {
-        fmt.Println("域名参数缺失")
-    } else if namesilo.IsError(err, namesilo.ErrInsufficientBalance) {
-        fmt.Println("余额不足")
-    } else {
-        fmt.Printf("其他错误: %v\n", err)
-    }
-    return
-}
-
-// 在包内部使用错误（无需前缀）
-func (s *Service) SomeFunction(domain string) error {
-    if domain == "" {
-        return ErrDomainRequired  // 直接使用别名
-    }
-    // ...
-}
-```
-
 ## 完整功能列表
 
-### 域名管理 (domains)
+### 🌐 [域名管理 (domains)](domains/README.md)
 
 - ✅ 检查域名可用性
 - ✅ 注册域名
@@ -483,7 +190,7 @@ func (s *Service) SomeFunction(domain string) error {
 - ✅ 自动续费设置
 - ✅ 域名 Drop Catch
 
-### DNS 管理 (dns)
+### 📝 [DNS 管理 (dns)](dns/README.md)
 
 - ✅ 列出 DNS 记录
 - ✅ 添加 DNS 记录（A/AAAA/CNAME/MX/TXT/SRV/CAA）
@@ -494,7 +201,7 @@ func (s *Service) SomeFunction(domain string) error {
   - 添加 DNSSEC 记录
   - 删除 DNSSEC 记录
 
-### 联系人管理 (contact)
+### 👤 [联系人管理 (contact)](contact/README.md)
 
 - ✅ 添加联系人
 - ✅ 更新联系人
@@ -502,7 +209,7 @@ func (s *Service) SomeFunction(domain string) error {
 - ✅ 列出联系人
 - ✅ 关联联系人到域名
 
-### 账户管理 (account)
+### 💰 [账户管理 (account)](account/README.md)
 
 - ✅ 查询账户余额
 - ✅ 添加账户资金
@@ -511,7 +218,7 @@ func (s *Service) SomeFunction(domain string) error {
 - ✅ 列出即将到期的域名
 - ✅ 统计即将到期的域名数量
 
-### 域名服务器管理 (nameserver)
+### 🔧 [域名服务器管理 (nameserver)](nameserver/README.md)
 
 - ✅ 修改域名服务器
 - ✅ 列出已注册的域名服务器
@@ -519,7 +226,7 @@ func (s *Service) SomeFunction(domain string) error {
 - ✅ 修改域名服务器 IP
 - ✅ 删除域名服务器
 
-### 转发管理 (forwarding)
+### 📮 [转发管理 (forwarding)](forwarding/README.md)
 
 - ✅ 配置域名转发
 - ✅ 配置子域名转发
@@ -528,12 +235,12 @@ func (s *Service) SomeFunction(domain string) error {
 - ✅ 配置邮件转发
 - ✅ 删除邮件转发
 
-### 隐私保护管理 (privacy)
+### 🔒 [隐私保护管理 (privacy)](privacy/README.md)
 
 - ✅ 添加域名 WHOIS 隐私保护
 - ✅ 移除域名 WHOIS 隐私保护
 
-### 域名转移管理 (transfer)
+### 🔄 [域名转移管理 (transfer)](transfer/README.md)
 
 - ✅ 获取域名授权码 (EPP Code)
 - ✅ 检查域名转移状态
@@ -541,7 +248,7 @@ func (s *Service) SomeFunction(domain string) error {
 - ✅ 重新发送转移管理员邮件
 - ✅ 更改转移 EPP 授权码
 
-### 域名组合管理 (portfolio)
+### 📁 [域名组合管理 (portfolio)](portfolio/README.md)
 
 - ✅ 列出所有域名组合
 - ✅ 创建新域名组合

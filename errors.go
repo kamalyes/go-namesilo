@@ -145,6 +145,10 @@ var (
 	ErrNameserverInUse    = NewError(ErrCodeOperationFailed, "nameserver is in use")
 	ErrInvalidIPAddress   = NewError(ErrCodeInvalidParam, "invalid IP address")
 
+	// Privacy 相关错误
+	ErrPrivacyAlreadyEnabled  = NewError(ErrCodeOperationFailed, "privacy is already enabled for this domain")
+	ErrPrivacyAlreadyDisabled = NewError(ErrCodeOperationFailed, "privacy is already disabled for this domain")
+
 	// Account 相关错误
 	ErrInvalidAmount = NewError(ErrCodeInvalidParam, "invalid amount")
 	ErrPaymentFailed = NewError(ErrCodeOperationFailed, "payment failed")

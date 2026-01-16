@@ -47,6 +47,8 @@ graph TB
     A --> E[Account Management]
     A --> F[Nameserver Management]
     A --> G[Forwarding Management]
+    A --> H[Privacy Protection]
+    A --> I[Transfer Management]
     
     B --> B1[注册/续费/转移]
     B --> B2[查询/锁定/解锁]
@@ -69,6 +71,13 @@ graph TB
     
     G --> G1[域名转发]
     G --> G2[邮件转发]
+    
+    H --> H1[添加隐私保护]
+    H --> H2[移除隐私保护]
+    
+    I --> I1[获取授权码]
+    I --> I2[转移状态查询]
+    I --> I3[转移更新操作]
 ```
 
 ## 🧰 核心模块
@@ -83,6 +92,8 @@ graph TB
 | [💰 account](account) | 账户管理 | 余额、订单、价格 |
 | [🔧 nameserver](nameserver) | 域名服务器 | NS 管理、修改 |
 | [📮 forwarding](forwarding) | 转发管理 | 域名转发、邮件转发 |
+| [🔒 privacy](privacy) | 隐私保护 | 添加/移除 WHOIS 隐私 |
+| [🔄 transfer](transfer) | 转移管理 | 授权码、转移状态、更新操作 |
 | [🔌 client](client) | HTTP 客户端 | 请求封装、响应解析 |
 
 ### 🎯 统一错误处理
@@ -314,6 +325,65 @@ orderReq := &account.OrderDetailsRequest{OrderNumber: "12345"}
 order, err := accountService.GetOrderDetails(ctx, orderReq)
 ```
 
+#### 🔒 隐私保护管理
+
+```go
+import "github.com/kamalyes/go-namesilo/privacy"
+
+// 创建隐私保护服务
+privacyService := privacy.NewService(client)
+
+// 添加 WHOIS 隐私保护
+addReq := &privacy.AddPrivacyRequest{Domain: "example.com"}
+addResp, err := privacyService.AddPrivacy(ctx, addReq)
+if err == nil {
+    fmt.Printf("隐私保护已添加，费用: $%.2f\n", addResp.Reply.OrderAmount)
+}
+
+// 移除 WHOIS 隐私保护
+removeReq := &privacy.RemovePrivacyRequest{Domain: "example.com"}
+_, err = privacyService.RemovePrivacy(ctx, removeReq)
+```
+
+#### 🔄 域名转移管理
+
+```go
+import "github.com/kamalyes/go-namesilo/transfer"
+
+// 创建转移服务
+transferService := transfer.NewService(client)
+
+// 获取域名授权码 (EPP Code)
+authReq := &transfer.RetrieveAuthCodeRequest{Domain: "example.com"}
+authResp, err := transferService.RetrieveAuthCode(ctx, authReq)
+if err == nil {
+    fmt.Printf("授权码: %s\n", authResp.Reply.AuthCode)
+}
+
+// 检查转移状态
+statusReq := &transfer.CheckTransferStatusRequest{Domain: "example.com"}
+statusResp, err := transferService.CheckTransferStatus(ctx, statusReq)
+if err == nil {
+    fmt.Printf("转移状态: %s\n", statusResp.Reply.Transfer.Status)
+    fmt.Printf("转移日期: %s\n", statusResp.Reply.Transfer.Date)
+}
+
+// 重新提交转移到注册局
+resubmitReq := &transfer.TransferUpdateResubmitRequest{Domain: "example.com"}
+_, err = transferService.UpdateResubmit(ctx, resubmitReq)
+
+// 重新发送管理员邮件
+emailReq := &transfer.TransferUpdateResendEmailRequest{Domain: "example.com"}
+_, err = transferService.UpdateResendEmail(ctx, emailReq)
+
+// 更改 EPP 授权码
+changeReq := &transfer.TransferUpdateChangeEPPCodeRequest{
+    Domain:  "example.com",
+    EPPCode: "new-epp-code-12345",
+}
+_, err = transferService.UpdateChangeEPPCode(ctx, changeReq)
+```
+
 #### 🔧 自定义客户端配置
 
 ```go
@@ -422,6 +492,19 @@ func (s *Service) SomeFunction(domain string) error {
 - ✅ 配置邮件转发
 - ✅ 删除邮件转发
 
+### 隐私保护管理 (privacy)
+
+- ✅ 添加域名 WHOIS 隐私保护
+- ✅ 移除域名 WHOIS 隐私保护
+
+### 域名转移管理 (transfer)
+
+- ✅ 获取域名授权码 (EPP Code)
+- ✅ 检查域名转移状态
+- ✅ 重新提交转移到注册局
+- ✅ 重新发送转移管理员邮件
+- ✅ 更改转移 EPP 授权码
+
 ## 📈 项目特色
 
 ### 🎯 统一错误处理
@@ -477,6 +560,8 @@ go-namesilo/
 ├── account/               # 账户管理
 ├── nameserver/            # 域名服务器
 ├── forwarding/            # 转发管理
+├── privacy/               # 隐私保护
+├── transfer/              # 转移管理
 └── types/                 # 公共类型定义
 ```
 

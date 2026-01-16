@@ -156,6 +156,12 @@ var (
 	ErrPrivacyAlreadyEnabled  = NewError(ErrCodeOperationFailed, "privacy is already enabled for this domain")
 	ErrPrivacyAlreadyDisabled = NewError(ErrCodeOperationFailed, "privacy is already disabled for this domain")
 
+	// Portfolio 相关错误
+	ErrPortfolioRequired      = NewError(ErrCodeMissingParam, "portfolio name is required")
+	ErrPortfolioNotFound      = NewError(ErrCodeOperationFailed, "portfolio not found")
+	ErrPortfolioAlreadyExists = NewError(ErrCodeOperationFailed, "portfolio already exists")
+	ErrPortfolioInUse         = NewError(ErrCodeOperationFailed, "portfolio is in use and cannot be deleted")
+
 	// Account 相关错误
 	ErrInvalidAmount = NewError(ErrCodeInvalidParam, "invalid amount")
 	ErrPaymentFailed = NewError(ErrCodeOperationFailed, "payment failed")

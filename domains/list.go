@@ -13,17 +13,21 @@ package domains
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/kamalyes/go-toolbox/pkg/mathx"
 )
 
 // List 列出域名
 // API: listDomains
 // Docs: https://www.namesilo.com/api-reference#domains/list-domains
 func (s *Service) List(ctx context.Context, req *ListDomainsRequest) (*ListDomainsResponse, error) {
-	params := httpx.NewParams().Build()
+	params := httpx.NewParams().
+		Set("page", strconv.Itoa(mathx.IfNotZero(req.Page, DefaultPage))).
+		Set("page_size", strconv.Itoa(mathx.IfNotZero(req.PageSize, DefaultPageSize)))
 
-	data, err := s.client.DoRequest(ctx, "listDomains", params)
+	data, err := s.client.DoRequest(ctx, "listDomains", params.Build())
 	if err != nil {
 		return nil, err
 	}

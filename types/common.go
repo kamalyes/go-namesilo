@@ -284,3 +284,9 @@ const (
 	DefaultBaseURL    = "https://www.namesilo.com/api"
 	DefaultTimeout    = 30 * time.Second
 )
+
+// 分页默认值
+const (
+	DefaultPage     = 1
+	DefaultPageSize = 10
+)

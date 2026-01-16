@@ -15,6 +15,7 @@ import (
 	"strconv"
 
 	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/kamalyes/go-toolbox/pkg/mathx"
 )
 
 // ListExpiringDomains 列出即将过期的域名
@@ -27,8 +28,8 @@ func (s *Service) ListExpiringDomains(ctx context.Context, req *ListExpiringDoma
 
 	params := httpx.NewParams().
 		Set("daysCount", strconv.Itoa(req.DaysCount)).
-		SetIf(req.Page > 0, "page", strconv.Itoa(req.Page)).
-		SetIf(req.PageSize > 0, "pageSize", strconv.Itoa(req.PageSize)).
+		Set("page", strconv.Itoa(mathx.IfNotZero(req.Page, DefaultPage))).
+		Set("page_size", strconv.Itoa(mathx.IfNotZero(req.PageSize, DefaultPageSize))).
 		Build()
 
 	data, err := s.client.DoRequest(ctx, "listExpiringDomains", params)

@@ -49,6 +49,7 @@ graph TB
     A --> G[Forwarding Management]
     A --> H[Privacy Protection]
     A --> I[Transfer Management]
+    A --> J[Portfolio Management]
     
     B --> B1[注册/续费/转移]
     B --> B2[查询/锁定/解锁]
@@ -78,6 +79,9 @@ graph TB
     I --> I1[获取授权码]
     I --> I2[转移状态查询]
     I --> I3[转移更新操作]
+    
+    J --> J1[组合 CRUD]
+    J --> J2[域名关联]
 ```
 
 ## 🧰 核心模块
@@ -94,6 +98,7 @@ graph TB
 | [📮 forwarding](forwarding) | 转发管理 | 域名转发、邮件转发 |
 | [🔒 privacy](privacy) | 隐私保护 | 添加/移除 WHOIS 隐私 |
 | [🔄 transfer](transfer) | 转移管理 | 授权码、转移状态、更新操作 |
+| [📁 portfolio](portfolio) | 组合管理 | 域名组合 CRUD、关联 |
 | [🔌 client](client) | HTTP 客户端 | 请求封装、响应解析 |
 
 ### 🎯 统一错误处理
@@ -384,6 +389,37 @@ changeReq := &transfer.TransferUpdateChangeEPPCodeRequest{
 _, err = transferService.UpdateChangeEPPCode(ctx, changeReq)
 ```
 
+#### 📁 域名组合管理
+
+```go
+import "github.com/kamalyes/go-namesilo/portfolio"
+
+// 创建组合管理服务
+portfolioService := portfolio.NewService(client)
+
+// 列出所有组合
+listResp, err := portfolioService.List(ctx, &portfolio.PortfolioListRequest{})
+for _, p := range listResp.Reply.Portfolios {
+    fmt.Printf("组合: %s (包含 %d 个域名)\n", p.Name, p.DomainCount)
+}
+
+// 创建新组合
+addResp, err := portfolioService.Add(ctx, &portfolio.PortfolioAddRequest{
+    Portfolio: "my-domains",
+})
+
+// 将域名关联到组合
+associateResp, err := portfolioService.DomainAssociate(ctx, &portfolio.PortfolioDomainAssociateRequest{
+    Domains:   []string{"example.com", "test.com", "mysite.com"},
+    Portfolio: "my-domains",
+})
+
+// 删除组合
+deleteResp, err := portfolioService.Delete(ctx, &portfolio.PortfolioDeleteRequest{
+    Portfolio: "old-portfolio",
+})
+```
+
 #### 🔧 自定义客户端配置
 
 ```go
@@ -505,6 +541,13 @@ func (s *Service) SomeFunction(domain string) error {
 - ✅ 重新发送转移管理员邮件
 - ✅ 更改转移 EPP 授权码
 
+### 域名组合管理 (portfolio)
+
+- ✅ 列出所有域名组合
+- ✅ 创建新域名组合
+- ✅ 删除域名组合
+- ✅ 关联域名到组合
+
 ## 📈 项目特色
 
 ### 🎯 统一错误处理
@@ -562,6 +605,7 @@ go-namesilo/
 ├── forwarding/            # 转发管理
 ├── privacy/               # 隐私保护
 ├── transfer/              # 转移管理
+├── portfolio/             # 组合管理
 └── types/                 # 公共类型定义
 ```
 

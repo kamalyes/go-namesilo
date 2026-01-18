@@ -65,6 +65,7 @@ func New(apiKey string, opts ...Option) (*Client, error) {
 	config := &Config{
 		APIKey:       apiKey,
 		BaseURL:      DefaultBaseURL,
+		PublicURL:    DefaultPublicURL,
 		Timeout:      DefaultTimeout,
 		Debug:        true,
 		ResponseType: DefaultType, // 默认使用 XML
@@ -76,8 +77,9 @@ func New(apiKey string, opts ...Option) (*Client, error) {
 		opt(config)
 	}
 
-	// 规范化 BaseURL，确保包含协议前缀
+	// 规范化 URL，确保包含协议前缀
 	config.BaseURL = httpx.NormalizeBaseURL(config.BaseURL)
+	config.PublicURL = httpx.NormalizeBaseURL(config.PublicURL)
 
 	// 创建 HTTP 客户端
 	httpClient := httpx.NewClient(

@@ -2,7 +2,7 @@
  * @Author: kamalyes 501893067@qq.com
  * @Date: 2026-01-16 23:55:00
  * @LastEditors: kamalyes 501893067@qq.com
- * @LastEditTime: 2026-01-17 00:15:16
+ * @LastEditTime: 2026-01-17 01:05:56
  * @FilePath: \go-namesilo\client\mock_test.go
  * @Description: Mock 测试客户端 - 动态生成响应
  *
@@ -12,126 +12,10 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
-// MockClient Mock 客户端，用于测试
-type MockClient struct {
-	*Client
-	MockDoRequestFunc func(ctx context.Context, operation string, params map[string]string) ([]byte, error)
-}
-
-// DoRequest Mock 的 DoRequest 方法
-func (m *MockClient) DoRequest(ctx context.Context, operation string, params map[string]string) ([]byte, error) {
-	if m.MockDoRequestFunc != nil {
-		return m.MockDoRequestFunc(ctx, operation, params)
-	}
-	return m.Client.DoRequest(ctx, operation, params)
-}
-
-// NewMockClient 创建一个 Mock 客户端 (XML 格式)
-func NewMockClient() *MockClient {
-	client, _ := New("mock-api-key", WithDebug(false), WithResponseType(ResponseTypeXML))
-	return &MockClient{
-		Client: client,
-	}
-}
-
-// NewMockJSONClient 创建一个 Mock 客户端 (JSON 格式)
-func NewMockJSONClient() *MockClient {
-	client, _ := New("mock-api-key", WithDebug(false), WithResponseType(ResponseTypeJSON))
-	return &MockClient{
-		Client: client,
-	}
-}
-
-// MockResponseFunc 动态生成 Mock 响应的函数类型
-type MockResponseFunc func(operation string, params map[string]string) ([]byte, error)
-
-// WithMockResponse 设置 Mock 响应函数
-func (m *MockClient) WithMockResponse(fn MockResponseFunc) *MockClient {
-	m.MockDoRequestFunc = func(ctx context.Context, operation string, params map[string]string) ([]byte, error) {
-		return fn(operation, params)
-	}
-	return m
-}
-
-// MockSuccessXMLResponse 动态生成成功的 XML 响应
-func MockSuccessXMLResponse(operation string, content string) MockResponseFunc {
-	return func(op string, params map[string]string) ([]byte, error) {
-		if op != operation {
-			return nil, fmt.Errorf("unexpected operation: %s, expected: %s", op, operation)
-		}
-		response := fmt.Sprintf(`<namesilo>
-<request>
-<operation>%s</operation>
-<ip>185.220.236.2</ip>
-</request>
-<reply>
-<code>300</code>
-<detail>success</detail>
-%s
-</reply>
-</namesilo>`, operation, content)
-		return []byte(response), nil
-	}
-}
-
-// MockErrorResponse 动态生成错误响应
-func MockErrorResponse(code int, detail string) MockResponseFunc {
-	return func(operation string, params map[string]string) ([]byte, error) {
-		response := fmt.Sprintf(`<namesilo>
-<request>
-<operation>%s</operation>
-<ip>185.220.236.2</ip>
-</request>
-<reply>
-<code>%d</code>
-<detail>%s</detail>
-</reply>
-</namesilo>`, operation, code, detail)
-		return []byte(response), nil
-	}
-}
-
-// MockJSONResponse 动态生成 JSON 响应
-func MockJSONResponse(operation string, jsonContent string) MockResponseFunc {
-	return func(op string, params map[string]string) ([]byte, error) {
-		if op != operation {
-			return nil, fmt.Errorf("unexpected operation: %s, expected: %s", op, operation)
-		}
-		response := fmt.Sprintf(`{
-	"request": {
-		"operation": "%s",
-		"ip": "185.220.236.2"
-	},
-	"reply": {
-		"code": 300,
-		"detail": "success",
-		%s
-	}
-}`, operation, jsonContent)
-		return []byte(response), nil
-	}
-}
-
-// MockConditionalResponse 根据参数条件动态生成响应
-func MockConditionalResponse(conditions map[string]MockResponseFunc, defaultFn MockResponseFunc) MockResponseFunc {
-	return func(operation string, params map[string]string) ([]byte, error) {
-		// 根据 operation 选择对应的响应函数
-		if fn, ok := conditions[operation]; ok {
-			return fn(operation, params)
-		}
-		// 使用默认响应
-		if defaultFn != nil {
-			return defaultFn(operation, params)
-		}
-		return nil, fmt.Errorf("no mock response for operation: %s", operation)
-	}
-}
 
 // TestMockDynamicResponse 测试动态生成响应
 func TestMockDynamicResponse(t *testing.T) {

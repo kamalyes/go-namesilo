@@ -550,3 +550,61 @@ func (r *WhoisReply) Error() string {
 	}
 	return fmt.Sprintf("NameSilo API error (code %d): %s", r.Code, r.Detail)
 }
+
+// ============== Domain Recommend ==============
+
+// RecommendDomainsRequest 推荐域名请求
+type RecommendDomainsRequest struct {
+	Keyword        string   `json:"keyword"`                   // 关键词（必填）
+	TLDs           []string `json:"tlds,omitempty"`            // 顶级域名列表（可选）
+	MaxPrice       float64  `json:"max_price,omitempty"`       // 最大价格（可选）
+	MaxDomains     int      `json:"max_domains,omitempty"`     // 最大域名数量（可选）
+	IncludeMatched bool     `json:"include_matched,omitempty"` // 是否包含精确匹配的域名（可选）
+}
+
+// RecommendDomainsResponse 推荐域名响应
+type RecommendDomainsResponse struct {
+	Recommended []AvailableDomain `json:"recommended"` // 推荐的域名列表（基于关键词变体）
+	Matched     []AvailableDomain `json:"matched"`     // 匹配的域名列表（基于原始关键词）
+	Unavailable []string          `json:"unavailable"` // 不可用的域名列表
+}
+
+// FilterType 过滤器类型
+type FilterType string
+
+const (
+	FilterByPrice  FilterType = "price"  // 按价格过滤
+	FilterByTLD    FilterType = "tld"    // 按顶级域名过滤
+	FilterByLength FilterType = "length" // 按域名长度过滤
+)
+
+// DomainFilter 域名过滤条件（支持多条件组合）
+type DomainFilter struct {
+	// 价格过滤
+	MaxPrice *float64 `json:"max_price,omitempty"` // 最大价格（nil 表示不过滤）
+	MinPrice *float64 `json:"min_price,omitempty"` // 最小价格（nil 表示不过滤）
+
+	// TLD 过滤
+	IncludeTLDs []string `json:"include_tlds,omitempty"` // 包含的 TLD 列表（空表示不过滤）
+	ExcludeTLDs []string `json:"exclude_tlds,omitempty"` // 排除的 TLD 列表（空表示不过滤）
+
+	// 长度过滤
+	MaxLength *int `json:"max_length,omitempty"` // 最大域名长度（nil 表示不过滤）
+	MinLength *int `json:"min_length,omitempty"` // 最小域名长度（nil 表示不过滤）
+
+	// Premium 过滤
+	ExcludePremium bool `json:"exclude_premium,omitempty"` // 是否排除高级域名
+}
+
+// CheckAvailabilityFilterRequest 带过滤条件的域名可用性检查请求
+type CheckAvailabilityFilterRequest struct {
+	Domains []string      `json:"domains"`          // 要检查的域名列表（必填）
+	Filter  *DomainFilter `json:"filter,omitempty"` // 过滤条件（可选，支持多条件组合）
+}
+
+// CheckAvailabilityFilterResponse 带过滤条件的域名可用性检查响应
+type CheckAvailabilityFilterResponse struct {
+	Available   []AvailableDomain `json:"available"`   // 符合过滤条件的可用域名
+	Unavailable []string          `json:"unavailable"` // 不可用的域名
+	Filtered    []AvailableDomain `json:"filtered"`    // 可用但不符合过滤条件的域名
+}

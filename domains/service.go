@@ -10,17 +10,13 @@
  */
 package domains
 
-import (
-	"github.com/kamalyes/go-namesilo/client"
-)
-
 // Service 域名服务
 type Service struct {
-	client *client.Client
+	client ClientInterface
 }
 
 // NewService 创建域名服务
-func NewService(c *client.Client) *Service {
+func NewService(c ClientInterface) *Service {
 	return &Service{
 		client: c,
 	}

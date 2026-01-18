@@ -17,6 +17,19 @@ import (
 )
 
 // ============================================================================
+// 接口定义
+// ============================================================================
+
+// ClientInterface 客户端接口别名
+type ClientInterface = types.ClientInterface
+
+// 确保 Client 实现了 ClientInterface
+var _ ClientInterface = (*Client)(nil)
+
+// 确保 MockClient 实现了 ClientInterface
+var _ ClientInterface = (*MockClient)(nil)
+
+// ============================================================================
 // 错误类型
 // ============================================================================
 
@@ -35,6 +48,7 @@ var (
 
 const (
 	DefaultBaseURL    = types.DefaultBaseURL
+	DefaultPublicURL  = types.DefaultPublicURL
 	DefaultAPIVersion = types.DefaultAPIVersion
 	DefaultType       = types.DefaultType
 	DefaultTimeout    = types.DefaultTimeout

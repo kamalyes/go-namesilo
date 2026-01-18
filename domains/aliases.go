@@ -17,6 +17,13 @@ import (
 )
 
 // ============================================================================
+// 接口定义
+// ============================================================================
+
+// ClientInterface 客户端接口别名
+type ClientInterface = types.ClientInterface
+
+// ============================================================================
 // 错误类型
 // ============================================================================
 
@@ -57,6 +64,12 @@ var (
 	DefaultPageSize = types.DefaultPageSize
 )
 
+var (
+	DefaultMaxDomainPrice       = types.DefaultMaxDomainPrice
+	DefaultMaxDomainsPerRequest = types.DefaultMaxDomainsPerRequest
+	DefaultTLDs                 = types.DefaultTLDs
+)
+
 // ============================================================================
 // 域名请求类型
 // ============================================================================
@@ -79,6 +92,8 @@ type (
 	DeleteDomainForwardSubDomainRequest = types.DeleteDomainForwardSubDomainRequest
 	DomainPushRequest                   = types.DomainPushRequest
 	CheckTransferAvailabilityRequest    = types.CheckTransferAvailabilityRequest
+	RecommendDomainsRequest             = types.RecommendDomainsRequest
+	CheckAvailabilityFilterRequest      = types.CheckAvailabilityFilterRequest
 )
 
 // ============================================================================
@@ -116,4 +131,15 @@ type (
 	CheckTransferAvailabilityResponse    = types.CheckTransferAvailabilityResponse
 	TransferAvailableDomain              = types.TransferAvailableDomain
 	TransferUnavailableDomain            = types.TransferUnavailableDomain
+	RecommendDomainsResponse             = types.RecommendDomainsResponse
+	CheckAvailabilityFilterResponse      = types.CheckAvailabilityFilterResponse
+	DomainFilter                         = types.DomainFilter
+	FilterType                           = types.FilterType
+)
+
+// 过滤器类型常量
+var (
+	FilterByPrice  = types.FilterByPrice
+	FilterByTLD    = types.FilterByTLD
+	FilterByLength = types.FilterByLength
 )

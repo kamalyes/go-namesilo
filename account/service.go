@@ -10,17 +10,13 @@
  */
 package account
 
-import (
-	"github.com/kamalyes/go-namesilo/client"
-)
-
-// Service 账户服务
+// Service 账号服务
 type Service struct {
-	client *client.Client
+	client ClientInterface
 }
 
-// NewService 创建账户服务
-func NewService(c *client.Client) *Service {
+// NewService 创建账号服务
+func NewService(c ClientInterface) *Service {
 	return &Service{
 		client: c,
 	}

@@ -16,11 +16,11 @@ import (
 
 // Service DNS 服务
 type Service struct {
-	client *client.Client
+	client client.ClientInterface
 }
 
 // NewService 创建 DNS 服务
-func NewService(c *client.Client) *Service {
+func NewService(c client.ClientInterface) *Service {
 	return &Service{
 		client: c,
 	}

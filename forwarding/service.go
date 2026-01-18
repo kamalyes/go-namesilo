@@ -14,10 +14,10 @@ import "github.com/kamalyes/go-namesilo/client"
 
 // Service 转发服务
 type Service struct {
-	client *client.Client
+	client client.ClientInterface
 }
 
-// NewService 创建转发服务实例
-func NewService(c *client.Client) *Service {
+// NewService 创建转发服务
+func NewService(c client.ClientInterface) *Service {
 	return &Service{client: c}
 }

@@ -12,9 +12,28 @@
 package client
 
 import (
+	"context"
+
 	namesilo "github.com/kamalyes/go-namesilo"
 	"github.com/kamalyes/go-namesilo/types"
 )
+
+// ============================================================================
+// 接口定义
+// ============================================================================
+
+// ClientInterface 定义客户端接口
+type ClientInterface interface {
+	DoRequest(ctx context.Context, operation string, params map[string]string) ([]byte, error)
+	DoPublicRequest(ctx context.Context, method, url string, body interface{}, result interface{}) error
+	ParseResponse(data []byte, v interface{}) error
+}
+
+// 确保 Client 实现了 ClientInterface
+var _ ClientInterface = (*Client)(nil)
+
+// 确保 MockClient 实现了 ClientInterface
+var _ ClientInterface = (*MockClient)(nil)
 
 // ============================================================================
 // 错误类型
@@ -35,6 +54,7 @@ var (
 
 const (
 	DefaultBaseURL    = types.DefaultBaseURL
+	DefaultPublicURL  = types.DefaultPublicURL
 	DefaultAPIVersion = types.DefaultAPIVersion
 	DefaultType       = types.DefaultType
 	DefaultTimeout    = types.DefaultTimeout

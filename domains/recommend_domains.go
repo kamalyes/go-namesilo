@@ -26,8 +26,6 @@ import (
 func (s *Service) RecommendDomains(ctx context.Context, req *RecommendDomainsRequest) (*RecommendDomainsResponse, error) {
 	// 设置默认值
 	tlds := mathx.IfEmpty(req.TLDs, DefaultTLDs)
-	maxPrice := mathx.IfNotZero(req.MaxPrice, DefaultMaxDomainPrice)
-	maxDomains := mathx.IfNotZero(req.MaxDomains, DefaultMaxDomainsPerRequest)
 	includeMatched := req.IncludeMatched // 默认 false，需要显式设置
 
 	// 1. 生成推荐域名（基于关键词变体）
@@ -45,12 +43,13 @@ func (s *Service) RecommendDomains(ctx context.Context, req *RecommendDomainsReq
 		allDomains = recommendDomains
 	}
 
-	// 3. 限制域名数量
-	if len(allDomains) > maxDomains {
-		allDomains = allDomains[:maxDomains]
+	// 3. 创建原始域名集合（用于快速查找）
+	originalDomainSet := make(map[string]bool)
+	for _, domain := range originalDomains {
+		originalDomainSet[domain] = true
 	}
 
-	// 4. 检查域名可用性
+	// 4. 检查所有域名可用性（不提前截断，让API返回所有结果）
 	checkResp, err := s.CheckAvailability(ctx, &CheckRegisterAvailabilityRequest{
 		Domains: allDomains,
 	})
@@ -58,23 +57,17 @@ func (s *Service) RecommendDomains(ctx context.Context, req *RecommendDomainsReq
 		return nil, fmt.Errorf("failed to check domain availability: %w", err)
 	}
 
-	// 5. 创建原始域名集合（用于快速查找）
-	originalDomainSet := make(map[string]bool)
-	for _, domain := range originalDomains {
-		originalDomainSet[domain] = true
-	}
-
-	// 6. 分离并过滤域名
+	// 5. 分离并过滤域名
 	resp := &RecommendDomainsResponse{
 		Recommended: make([]AvailableDomain, 0),
 		Matched:     make([]AvailableDomain, 0),
 		Unavailable: checkResp.Reply.Unavailable,
 	}
 
-	// 处理可用域名，按价格过滤
+	// 处理可用域名：先按价格过滤，再限制数量
 	for _, domain := range checkResp.Reply.Available {
 		// 跳过超过最大价格的高级域名
-		if domain.Price > maxPrice {
+		if req.MaxPrice > 0 && domain.Price > req.MaxPrice {
 			continue
 		}
 
@@ -82,7 +75,6 @@ func (s *Service) RecommendDomains(ctx context.Context, req *RecommendDomainsReq
 			Domain: domain.Domain,
 			Price:  domain.Price,
 		}
-
 		// 根据域名类型分类
 		if originalDomainSet[domain.Domain] {
 			resp.Matched = append(resp.Matched, availDomain)

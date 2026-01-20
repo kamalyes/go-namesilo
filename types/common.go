@@ -292,14 +292,6 @@ const (
 	DefaultPageSize = 10
 )
 
-const (
-	// DefaultMaxDomainPrice 默认最大可接受的域名价格，超过此价格视为高级域名
-	DefaultMaxDomainPrice = 2.0
-
-	// DefaultMaxDomainsPerRequest 每次请求的最大域名数量，避免超时或响应为空
-	DefaultMaxDomainsPerRequest = 50
-)
-
 var (
 	// DefaultTLDs 默认 TLD 列表
 	DefaultTLDs = []string{"com", "cc", "me", "xyz", "top", "click", "buzz", "club", "win", "life", "net"}

@@ -558,7 +558,6 @@ type RecommendDomainsRequest struct {
 	Keyword        string   `json:"keyword"`                   // 关键词（必填）
 	TLDs           []string `json:"tlds,omitempty"`            // 顶级域名列表（可选）
 	MaxPrice       float64  `json:"max_price,omitempty"`       // 最大价格（可选）
-	MaxDomains     int      `json:"max_domains,omitempty"`     // 最大域名数量（可选）
 	IncludeMatched bool     `json:"include_matched,omitempty"` // 是否包含精确匹配的域名（可选）
 }
 

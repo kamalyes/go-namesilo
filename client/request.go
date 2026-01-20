@@ -30,21 +30,20 @@ func (c *Client) DoRequest(ctx context.Context, operation string, params map[str
 
 	// 构建请求参数
 	queryParams := url.Values{}
-	// 使用配置中的 API 版本
-	queryParams.Set("version", c.config.APIVersion)
 
-	// 使用配置中的响应类型
-	queryParams.Set("type", c.config.ResponseType.String())
-	queryParams.Set("key", c.config.APIKey)
-
-	// 添加其他参数
+	// 添加业务参数（先添加，以便系统参数可以覆盖）
 	for key, value := range params {
 		if value != "" {
 			queryParams.Set(key, value)
 		}
 	}
 
-	// 构建完整 URL
+	// 强制设置系统参数（这些参数不应被 params 覆盖）
+	queryParams.Set("version", c.config.APIVersion)
+	queryParams.Set("type", c.config.ResponseType.String())
+	queryParams.Set("key", c.config.APIKey)
+
+	// 构建完整 URL（NameSilo API 使用 GET 方法）
 	baseURL, err := osx.JoinURL(c.config.BaseURL, operation)
 	if err != nil {
 		return nil, namesilo.WrapError(ErrCodeAPIRequest, "failed to build request URL", err)
@@ -66,8 +65,9 @@ func (c *Client) DoRequest(ctx context.Context, operation string, params map[str
 
 	// 使用 errorx.Recover 捕获 panic
 	recoverErr = errorx.Recover(func() {
-		// 发送请求并获取响应体
-		resp, err := c.httpClient.Get(fullURL).Send()
+		// 使用 GET 请求（NameSilo API 标准方法）
+		// httpx 已修复参数覆盖问题，现在可以直接传完整 URL
+		resp, err := c.httpClient.Get(fullURL).WithContext(ctx).Send()
 		if err != nil {
 			apiErr = err
 			return

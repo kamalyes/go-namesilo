@@ -3,7 +3,7 @@ module github.com/kamalyes/go-namesilo
 go 1.23
 
 require (
-	github.com/kamalyes/go-toolbox v0.11.87-0.20260116135615-50f01d3783d5
+	github.com/kamalyes/go-toolbox v0.11.87-0.20260120082029-c1d3b5ee561d
 	github.com/stretchr/testify v1.11.1
 )
 

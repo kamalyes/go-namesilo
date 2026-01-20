@@ -56,11 +56,6 @@ func TestRecommendDomains(t *testing.T) {
 		assert.GreaterOrEqual(t, len(resp.Recommended), 0, "应该有推荐域名")
 		assert.Len(t, resp.Matched, 0, "默认不应该包含匹配域名")
 		assert.Len(t, resp.Unavailable, 2, "应该有 2 个不可用域名")
-
-		// 验证价格过滤（默认最大价格 DefaultMaxDomainPrice）
-		for _, domain := range resp.Recommended {
-			assert.LessOrEqual(t, domain.Price, DefaultMaxDomainPrice, "推荐域名价格应该 <= %f", DefaultMaxDomainPrice)
-		}
 	})
 
 	t.Run("包含匹配域名", func(t *testing.T) {
@@ -122,8 +117,7 @@ func TestRecommendDomains(t *testing.T) {
 	t.Run("自定义最大域名数量", func(t *testing.T) {
 		maxDomains := 3
 		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
-			Keyword:    "example",
-			MaxDomains: maxDomains,
+			Keyword: "example",
 		})
 
 		assert.NoError(t, err, "RecommendDomains 应该成功")
@@ -139,7 +133,6 @@ func TestRecommendDomains(t *testing.T) {
 			Keyword:        "example",
 			TLDs:           []string{"com", "net", "org"},
 			MaxPrice:       10.0,
-			MaxDomains:     10, // 增加限制以适应测试数据
 			IncludeMatched: true,
 		})
 

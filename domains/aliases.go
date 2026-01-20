@@ -65,9 +65,7 @@ var (
 )
 
 var (
-	DefaultMaxDomainPrice       = types.DefaultMaxDomainPrice
-	DefaultMaxDomainsPerRequest = types.DefaultMaxDomainsPerRequest
-	DefaultTLDs                 = types.DefaultTLDs
+	DefaultTLDs = types.DefaultTLDs
 )
 
 // ============================================================================

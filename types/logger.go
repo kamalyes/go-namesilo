@@ -35,7 +35,10 @@ func (e *EmptyLogger) WarnContext(ctx context.Context, msg string, keysAndValues
 // ErrorContext 实现 Logger 接口
 func (e *EmptyLogger) ErrorContext(ctx context.Context, msg string, keysAndValues ...interface{}) {}
 
-// NewEmptyLogger 创建一个空日志记录器
+// noLogger 全局空日志记录器实例（单例）
+var noLogger Logger = &EmptyLogger{}
+
+// NewEmptyLogger 返回一个空日志记录器（单例模式）
 func NewEmptyLogger() Logger {
-	return &EmptyLogger{}
+	return noLogger
 }

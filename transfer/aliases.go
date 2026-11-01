@@ -46,10 +46,10 @@ var (
 // ============================================================================
 
 type (
-	RetrieveAuthCodeRequest           = types.RetrieveAuthCodeRequest
-	CheckTransferStatusRequest        = types.CheckTransferStatusRequest
-	TransferUpdateResubmitRequest     = types.TransferUpdateResubmitRequest
-	TransferUpdateResendEmailRequest  = types.TransferUpdateResendEmailRequest
+	RetrieveAuthCodeRequest            = types.RetrieveAuthCodeRequest
+	CheckTransferStatusRequest         = types.CheckTransferStatusRequest
+	TransferUpdateResubmitRequest      = types.TransferUpdateResubmitRequest
+	TransferUpdateResendEmailRequest   = types.TransferUpdateResendEmailRequest
 	TransferUpdateChangeEPPCodeRequest = types.TransferUpdateChangeEPPCodeRequest
 )
 
@@ -58,10 +58,10 @@ type (
 // ============================================================================
 
 type (
-	RetrieveAuthCodeResponse           = types.RetrieveAuthCodeResponse
-	CheckTransferStatusResponse        = types.CheckTransferStatusResponse
-	TransferUpdateResubmitResponse     = types.TransferUpdateResubmitResponse
-	TransferUpdateResendEmailResponse  = types.TransferUpdateResendEmailResponse
+	RetrieveAuthCodeResponse            = types.RetrieveAuthCodeResponse
+	CheckTransferStatusResponse         = types.CheckTransferStatusResponse
+	TransferUpdateResubmitResponse      = types.TransferUpdateResubmitResponse
+	TransferUpdateResendEmailResponse   = types.TransferUpdateResendEmailResponse
 	TransferUpdateChangeEPPCodeResponse = types.TransferUpdateChangeEPPCodeResponse
-	TransferStatus                     = types.TransferStatus
+	TransferStatus                      = types.TransferStatus
 )

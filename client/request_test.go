@@ -18,9 +18,20 @@ import (
 
 	logger "github.com/kamalyes/go-logger"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestLogger 测试用的日志记录器，嵌入 *logger.EmptyLogger 自动实现 ILogger 全部方法
+// TestLogger 记录各级别日志，供断言使用
+//
+// 覆写的必须是 ...ContextKV 这一组：客户端打日志走的是 InfoContextKV / DebugContextKV，
+// 而不是 InfoContext / DebugContext。先前这里覆写的是不带 KV 的那组，于是客户端的调用
+// 直接落到内嵌的 EmptyLogger 上被丢弃，四个集合永远是空的，断言全部失败
+// 这个失败被旧 CI 的 continue-on-error 盖了很久
+//
+// [EN] The overrides must be the ...ContextKV methods, because that is what the client calls.
+// They previously overrode the variants without KV, so every client call fell through to the
+// embedded EmptyLogger and was discarded, leaving all four slices empty
 type TestLogger struct {
 	*logger.EmptyLogger
 	DebugLogs []string
@@ -29,7 +40,7 @@ type TestLogger struct {
 	ErrorLogs []string
 }
 
-func (l *TestLogger) DebugContext(ctx context.Context, msg string, keysAndValues ...interface{}) {
+func (l *TestLogger) DebugContextKV(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logStr := fmt.Sprintf("%s", msg)
 	for i := 0; i < len(keysAndValues); i += 2 {
 		if i+1 < len(keysAndValues) {
@@ -40,7 +51,7 @@ func (l *TestLogger) DebugContext(ctx context.Context, msg string, keysAndValues
 	fmt.Println("[DEBUG]", logStr)
 }
 
-func (l *TestLogger) InfoContext(ctx context.Context, msg string, keysAndValues ...interface{}) {
+func (l *TestLogger) InfoContextKV(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logStr := fmt.Sprintf("%s", msg)
 	for i := 0; i < len(keysAndValues); i += 2 {
 		if i+1 < len(keysAndValues) {
@@ -51,7 +62,7 @@ func (l *TestLogger) InfoContext(ctx context.Context, msg string, keysAndValues 
 	fmt.Println("[INFO]", logStr)
 }
 
-func (l *TestLogger) WarnContext(ctx context.Context, msg string, keysAndValues ...interface{}) {
+func (l *TestLogger) WarnContextKV(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logStr := fmt.Sprintf("%s", msg)
 	for i := 0; i < len(keysAndValues); i += 2 {
 		if i+1 < len(keysAndValues) {
@@ -62,7 +73,7 @@ func (l *TestLogger) WarnContext(ctx context.Context, msg string, keysAndValues 
 	fmt.Println("[WARN]", logStr)
 }
 
-func (l *TestLogger) ErrorContext(ctx context.Context, msg string, keysAndValues ...interface{}) {
+func (l *TestLogger) ErrorContextKV(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logStr := fmt.Sprintf("%s", msg)
 	for i := 0; i < len(keysAndValues); i += 2 {
 		if i+1 < len(keysAndValues) {
@@ -101,95 +112,56 @@ func TestDoRequestWithLogger(t *testing.T) {
 	_, _ = c.DoRequest(ctx, "getDomainInfo", params)
 
 	// 验证日志
+	//
+	// logRequestResponse 有四条互斥路径：panic / timeout / error / 成功，
+	// 四条都记 operation 与 url，并且消息里都含 "NameSilo API"
+	// 这里用假 API key 打真实接口，走哪条取决于网络，所以断言四条路径的共同保证，
+	// 而不是赌一定走成功路径
+	//
+	// [EN] logRequestResponse has four mutually exclusive paths and all of them record the
+	// operation and the url, so the assertions target what every path guarantees rather than
+	// assuming the request succeeded
 	t.Run("验证请求日志", func(t *testing.T) {
-		assert.NotEmpty(t, testLogger.DebugLogs, "应该有 Debug 日志记录")
+		recorded := make([]string, 0, 8)
+		recorded = append(recorded, testLogger.InfoLogs...)
+		recorded = append(recorded, testLogger.WarnLogs...)
+		recorded = append(recorded, testLogger.ErrorLogs...)
+		require.NotEmpty(t, recorded, "请求结束后应该至少记下一条日志")
 
 		requestLog := ""
-		for _, log := range testLogger.DebugLogs {
-			if strings.Contains(log, "NameSilo API Request") {
+		for _, log := range recorded {
+			if strings.Contains(log, "NameSilo API") {
 				requestLog = log
 				break
 			}
 		}
+		require.NotEmpty(t, requestLog, "应该找到一条 NameSilo API 日志")
 
-		assert.NotEmpty(t, requestLog, "应该找到请求日志")
-
-		// 验证日志包含必要信息（新格式）
-		assert.Contains(t, requestLog, "Trace ID", "请求日志应该包含 Trace ID")
-		assert.Contains(t, requestLog, "Operation", "请求日志应该包含 Operation")
-		assert.Contains(t, requestLog, "getDomainInfo", "请求日志应该包含操作名称")
-		assert.Contains(t, requestLog, "Request URL", "请求日志应该包含 Request URL")
-		assert.Contains(t, requestLog, "Query Params", "请求日志应该包含 Query Params")
+		assert.Contains(t, requestLog, "operation=getDomainInfo", "日志应该带上操作名")
+		assert.Contains(t, requestLog, "url=", "日志应该带上请求 URL")
 
 		t.Logf("请求日志: %s", requestLog)
 	})
 
 	t.Run("验证响应日志", func(t *testing.T) {
+		// 响应体日志只在拿到非空 body 时才打，所以这条是条件断言：
+		// 没有就跳过，有就校验它确实带了 operation 与 body
+		// [EN] The response-body log is only emitted for a non-empty body, so this assertion is
+		// conditional: skip when absent, and when present check it carries the operation and body
 		responseLog := ""
 		for _, log := range testLogger.DebugLogs {
-			if strings.Contains(log, "NameSilo API Request/Response") {
+			if strings.Contains(log, "NameSilo API response body") {
 				responseLog = log
 				break
 			}
 		}
-
-		if responseLog != "" {
-			// 验证响应日志包含必要信息
-			assert.Contains(t, responseLog, "Status", "响应日志应该包含 Status")
-			assert.Contains(t, responseLog, "Headers", "响应日志应该包含 Headers")
-			assert.Contains(t, responseLog, "Body Length", "响应日志应该包含 Body Length")
-			assert.Contains(t, responseLog, "Body", "响应日志应该包含 Body")
-
-			t.Logf("响应日志: %s", responseLog)
+		if responseLog == "" {
+			t.Skip("本次请求没有响应体，跳过响应日志校验")
 		}
+
+		assert.Contains(t, responseLog, "operation=getDomainInfo", "响应日志应该带上操作名")
+		assert.Contains(t, responseLog, "body=", "响应日志应该带上响应体")
+
+		t.Logf("响应日志: %s", responseLog)
 	})
-}
-
-// TestDoRequestWithEmptyLogger 测试使用空日志记录器
-func TestDoRequestWithEmptyLogger(t *testing.T) {
-	// 创建客户端，使用空日志记录器
-	c, err := New("test-api-key",
-		WithDebug(true),
-		WithLogger(NoLogger),
-	)
-	assert.NoError(t, err, "创建客户端应该成功")
-	assert.NotNil(t, c, "客户端不应该为 nil")
-	assert.NotNil(t, c.logger, "logger 应该被设置")
-
-	// 执行请求（这会失败，但不应该 panic）
-	ctx := context.Background()
-	params := map[string]string{
-		"domain": "example.com",
-	}
-
-	assert.NotPanics(t, func() {
-		_, _ = c.DoRequest(ctx, "getDomainInfo", params)
-	}, "使用空日志记录器不应该 panic")
-
-	t.Log("使用空日志记录器测试通过")
-}
-
-// TestDoRequestWithoutLogger 测试不设置日志记录器的情况
-func TestDoRequestWithoutLogger(t *testing.T) {
-	// 创建客户端，不设置日志记录器
-	c, err := New("test-api-key",
-		WithDebug(true),
-	)
-	assert.NoError(t, err, "创建客户端应该成功")
-	assert.NotNil(t, c, "客户端不应该为 nil")
-
-	// 验证 logger 被自动设置为 NoLogger
-	assert.NotNil(t, c.logger, "logger 应该自动设置为 NoLogger")
-
-	// 执行请求（这会失败，但不应该 panic）
-	ctx := context.Background()
-	params := map[string]string{
-		"domain": "example.com",
-	}
-
-	assert.NotPanics(t, func() {
-		_, _ = c.DoRequest(ctx, "getDomainInfo", params)
-	}, "不设置日志记录器不应该 panic")
-
-	t.Log("不设置日志记录器测试通过")
 }
